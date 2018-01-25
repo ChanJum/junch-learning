@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.junch.crawler.mapper.ItemMapper">
+
+	<insert id="saveItems">
+		INSERT IGNORE tb_item_jd (id,title,sell_point,price,num,barcode,image,cid,status,created,updated) VALUES 
+		<foreach collection="items" separator="," item="item">
+			(#{item.id},#{item.title},#{item.sellPoint},#{item.price},#{item.num},#{item.barcode},#{item.image},#{item.cid},#{item.status},NOW(),NOW())
+		</foreach>;
+		INSERT IGNORE tb_item_jd_desc (item_id,item_desc,created,updated) VALUES
+		<foreach collection="items" separator="," item="item">
+			(#{item.id},#{item.itemDesc.itemDesc},NOW(),NOW())
+		</foreach>;
+	</insert>
+	
+</mapper>

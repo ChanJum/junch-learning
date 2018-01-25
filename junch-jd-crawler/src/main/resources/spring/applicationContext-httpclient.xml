@@ -1,0 +1,42 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.1.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.1.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.1.xsd">
+
+	<bean id="httpClientConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager" destroy-method="shutdown">
+		<!-- 最大连接数 -->
+		<property name="maxTotal" value="${http.maxTotal}"></property>
+		<!-- 默认每台主机的最大并发连接数 -->
+		<property name="defaultMaxPerRoute" value="${http.defaultMaxPerRoute}"></property>
+	</bean>
+	
+	<bean id="httpClientBuilder" class="org.apache.http.impl.client.HttpClientBuilder">
+		<property name="connectionManager" ref="httpClientConnectionManager"></property>
+	</bean>
+	
+	<!-- 利用 httpClientBuilder的build方法创建httpClient，并设置其为多例模式-->
+	<bean id="httpClient" class="org.apache.http.impl.client.CloseableHttpClient" 
+	factory-bean="httpClientBuilder" factory-method="build" scope="prototype"></bean>
+	
+	<bean id="requestConfigBuilder" class="org.apache.http.client.config.RequestConfig.Builder">
+		<!-- 连接的最长时间 -->
+		<property name="connectTimeout" value="${http.connectTimeout}"></property>
+		<!-- 从连接池获取连接的最长时间 -->
+		<property name="connectionRequestTimeout" value="${http.connectionRequestTimeout}"></property>
+		<!-- 数据传输的最长时间 -->
+		<property name="socketTimeout" value="${http.socketTimeout}"></property>
+	</bean>
+	
+	<bean id="requestConfig" class="org.apache.http.client.config.RequestConfig" factory-bean="requestConfigBuilder" factory-method="build">
+	</bean>
+	
+	<!-- 清理无效的连接 -->
+	<bean class="cn.junch.crawler.service.IdleConnectionMonitorThread" destroy-method="shutdown">
+		<constructor-arg index="0" ref="httpClientConnectionManager"></constructor-arg>
+	</bean>
+	
+</beans>
